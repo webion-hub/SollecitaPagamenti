@@ -11,7 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { StatoFatturaBadge, LivelloBadge } from "@/components/badges";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   ArrowRight,
@@ -19,10 +21,11 @@ import {
   Clock,
   TrendingUp,
   Wallet,
+  Zap,
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const { fatture, oggi, getCliente } = useStore();
+  const { fatture, oggi, getCliente, eseguiSollecitiAutomatici } = useStore();
 
   const scadute = fatture.filter((f) => f.stato === "scaduta");
   const inAttesa = fatture.filter((f) => f.stato === "in_attesa");
@@ -43,46 +46,51 @@ export default function DashboardPage() {
     .map((f) => ({ f, p: prossimoSollecito(f, oggi) }))
     .filter((x) => x.p && x.p.dovuto);
 
+  const handleAuto = () => {
+    const n = eseguiSollecitiAutomatici();
+    if (n > 0)
+      toast.success(`${n} sollecito/i inviati automaticamente`, {
+        description: "Email / PEC / WhatsApp simulati secondo l'escalation.",
+      });
+    else
+      toast.info("Nessun sollecito dovuto oggi", {
+        description: "Avanza il tempo per far maturare le scadenze.",
+      });
+  };
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Dashboard cash flow
-        </h1>
+    <div className="space-y-8">
+      {/* CTA principale: solleciti automatici, in alto al centro */}
+      <div className="flex flex-col items-center gap-4 pt-2 text-center">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Con SollecitaPro gestisci i tuoi insoluti e ottieni un cash flow migliore.
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Monitoraggio insoluti e solleciti automatici al {dataIt(oggi)}.
+          </p>
+        </div>
+        <Button
+          size="lg"
+          onClick={handleAuto}
+          className="h-11 gap-2 rounded-full px-6 text-[0.95rem] shadow-md shadow-primary/20"
+        >
+          <Zap className="size-4" />
+          Esegui solleciti automatici
+          {dovuti.length > 0 && (
+            <span className="ml-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-foreground/20 px-1.5 text-sm font-semibold">
+              {dovuti.length}
+            </span>
+          )}
+        </Button>
         <p className="text-sm text-muted-foreground">
-          Monitoraggio insoluti e solleciti automatici al {dataIt(oggi)}.
+          {dovuti.length > 0
+            ? `${dovuti.length} fatture pronte al sollecito`
+            : "Nessun sollecito dovuto adesso"}
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi
-          icon={<BanknoteArrowDown className="size-4" />}
-          label="Insoluto scaduto"
-          value={eur(totScaduto)}
-          sub={`${scadute.length} fatture scadute`}
-          tone="danger"
-        />
-        <Kpi
-          icon={<Clock className="size-4" />}
-          label="In attesa (a scadere)"
-          value={eur(totInAttesa)}
-          sub={`${inAttesa.length} fatture aperte`}
-        />
-        <Kpi
-          icon={<Wallet className="size-4" />}
-          label="Incassato"
-          value={eur(totIncassato)}
-          sub={`${pagate.length} fatture saldate`}
-          tone="ok"
-        />
-        <Kpi
-          icon={<TrendingUp className="size-4" />}
-          label="Giorni medi di scoperto"
-          value={`${giorniScoperto} gg`}
-          sub="media sulle scadute (DSO)"
-        />
-      </div>
-
+      {/* Solleciti da inviare */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -126,6 +134,37 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
+      {/* KPI: sotto il componente dei solleciti */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi
+          icon={<BanknoteArrowDown className="size-4" />}
+          label="Insoluto scaduto"
+          value={eur(totScaduto)}
+          sub={`${scadute.length} fatture scadute`}
+          tone="danger"
+        />
+        <Kpi
+          icon={<Clock className="size-4" />}
+          label="In attesa (a scadere)"
+          value={eur(totInAttesa)}
+          sub={`${inAttesa.length} fatture aperte`}
+        />
+        <Kpi
+          icon={<Wallet className="size-4" />}
+          label="Incassato"
+          value={eur(totIncassato)}
+          sub={`${pagate.length} fatture saldate`}
+          tone="ok"
+        />
+        <Kpi
+          icon={<TrendingUp className="size-4" />}
+          label="Giorni medi di scoperto"
+          value={`${giorniScoperto} gg`}
+          sub="media sulle scadute (DSO)"
+        />
+      </div>
+
+      {/* Insoluti aperti */}
       <Card>
         <CardHeader>
           <CardTitle>Insoluti aperti</CardTitle>
@@ -140,7 +179,7 @@ export default function DashboardPage() {
               <Link
                 key={f.id}
                 href={`/fatture/${f.id}`}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 hover:bg-muted/50"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50"
               >
                 <div className="min-w-0">
                   <div className="font-medium">{c?.ragioneSociale}</div>
@@ -184,7 +223,7 @@ function Kpi({
                 ? "text-red-500"
                 : tone === "ok"
                   ? "text-emerald-500"
-                  : "text-muted-foreground"
+                  : "text-primary"
             }
           >
             {icon}

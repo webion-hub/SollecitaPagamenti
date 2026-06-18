@@ -50,7 +50,7 @@ export default function FatturePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div>
+      <div className="mx-auto max-w-2xl text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
           Fatture & solleciti
         </h1>
@@ -60,7 +60,7 @@ export default function FatturePage() {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {FILTRI.map((f) => (
           <Button
             key={f.key}

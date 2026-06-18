@@ -41,7 +41,7 @@ export default function ClientiPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div>
+      <div className="mx-auto max-w-2xl text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
           Clienti & scoring affidabilità
         </h1>

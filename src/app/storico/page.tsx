@@ -91,7 +91,7 @@ export default function StoricoPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
+      <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Storico attività</h1>
         <p className="text-sm text-muted-foreground">
           Registro cronologico di solleciti, pagamenti, risposte e modifiche.
