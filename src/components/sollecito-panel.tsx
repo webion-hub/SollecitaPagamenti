@@ -7,6 +7,7 @@ import { generaDiffida, generaTestoSollecito } from "@/lib/templates";
 import { Canale, Cliente, Fattura, LABEL_CANALE, MAX_SOLLECITI } from "@/lib/types";
 import { dataIt, giorniTra } from "@/lib/format";
 import { LivelloBadge, CanaleBadge } from "@/components/badges";
+import { CanaliPicker } from "@/components/canali-picker";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,22 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import {
-  Check,
-  CheckCircle2,
-  FileText,
-  Mail,
-  MessageCircle,
-  Scale,
-  Send,
-  ShieldCheck,
-} from "lucide-react";
-
-const CANALE_ICON: Record<Canale, React.ReactNode> = {
-  email: <Mail className="size-4" />,
-  pec: <ShieldCheck className="size-4" />,
-  whatsapp: <MessageCircle className="size-4" />,
-};
+import { CheckCircle2, FileText, Scale, Send } from "lucide-react";
 
 export function SollecitoPanel({
   fattura,
@@ -165,40 +151,11 @@ export function SollecitoPanel({
                 Canali di invio{" "}
                 <span className="font-normal">· seleziona uno o più</span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(["email", "pec", "whatsapp"] as Canale[]).map((c) => {
-                  const attivo = canali.includes(c);
-                  const consigliato = prossimo.canaliConsigliati.includes(c);
-                  return (
-                    <button
-                      key={c}
-                      role="checkbox"
-                      aria-checked={attivo}
-                      onClick={() => toggleCanale(c)}
-                      className={
-                        "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors " +
-                        (attivo
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "hover:bg-muted")
-                      }
-                    >
-                      <span className="flex size-4 shrink-0 items-center justify-center">
-                        {attivo ? (
-                          <Check className="size-4" />
-                        ) : (
-                          CANALE_ICON[c]
-                        )}
-                      </span>
-                      {LABEL_CANALE[c]}
-                      {consigliato && !attivo && (
-                        <span className="text-[10px] text-muted-foreground">
-                          consigliato
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+              <CanaliPicker
+                canali={canali}
+                consigliati={prossimo.canaliConsigliati}
+                onToggle={toggleCanale}
+              />
             </div>
 
             <div className="flex flex-wrap gap-2">

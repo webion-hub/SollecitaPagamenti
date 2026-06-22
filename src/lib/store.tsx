@@ -51,12 +51,14 @@ const buildSollecito = (
   s: DatasetState,
   f: Fattura,
   canaliOverride?: Canale[],
+  testoOverride?: { oggetto: string; testo: string },
 ): { fattura: Fattura; ev: Evento } | null => {
   const prossimo = prossimoSollecito(f, s.oggi);
   if (!prossimo) return null;
   const cliente = s.clienti.find((c) => c.id === f.clienteId)!;
   const canali = canaliOverride ?? prossimo.canaliConsigliati;
-  const { oggetto, testo } = generaTestoSollecito(prossimo.livello, cliente, f);
+  const { oggetto, testo } =
+    testoOverride ?? generaTestoSollecito(prossimo.livello, cliente, f);
   const fattura: Fattura = {
     ...f,
     solleciti: [
@@ -91,11 +93,14 @@ interface StoreCtx extends DatasetState {
   getFattura: (id: string) => Fattura | undefined;
   fattureCliente: (clienteId: string) => Fattura[];
   // azioni
-  inviaSollecito: (fatturaId: string, canali?: Canale[]) => void;
+  inviaSollecito: (
+    fatturaId: string,
+    canali?: Canale[],
+    testo?: { oggetto: string; testo: string },
+  ) => void;
   segnaRisposta: (fatturaId: string, sollecitoId: string) => void;
   segnaPagata: (fatturaId: string) => void;
   segnaContestata: (fatturaId: string) => void;
-  eseguiSollecitiAutomatici: () => number; // ritorna n. solleciti inviati
   avanzaTempo: (giorni: number) => void;
   tornaAOggi: () => void; // riporta la data simulata a OGGI
   aggiornaStima: (fatturaId: string, stima: Stima) => void;
@@ -134,11 +139,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state, hydrated]);
 
-  const inviaSollecito = useCallback((fatturaId: string, canali?: Canale[]) => {
+  const inviaSollecito = useCallback(
+    (
+      fatturaId: string,
+      canali?: Canale[],
+      testo?: { oggetto: string; testo: string },
+    ) => {
     setState((s) => {
       const f = s.fatture.find((x) => x.id === fatturaId);
       if (!f) return s;
-      const res = buildSollecito(s, f, canali);
+      const res = buildSollecito(s, f, canali, testo);
       if (!res) return s;
       return {
         ...s,
@@ -146,27 +156,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         storico: [res.ev, ...s.storico],
       };
     });
-  }, []);
-
-  const eseguiSollecitiAutomatici = useCallback(() => {
-    let count = 0;
-    setState((s) => {
-      const eventi: Evento[] = [];
-      const fatture = s.fatture.map((f) => {
-        const p = prossimoSollecito(f, s.oggi);
-        if (p && p.dovuto) {
-          const res = buildSollecito(s, f);
-          if (res) {
-            count++;
-            eventi.push(res.ev);
-            return res.fattura;
-          }
-        }
-        return f;
-      });
-      return { ...s, fatture, storico: [...eventi, ...s.storico] };
-    });
-    return count;
   }, []);
 
   const segnaRisposta = useCallback(
@@ -383,7 +372,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       segnaRisposta,
       segnaPagata,
       segnaContestata,
-      eseguiSollecitiAutomatici,
       avanzaTempo,
       tornaAOggi,
       aggiornaStima,
@@ -397,7 +385,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       segnaRisposta,
       segnaPagata,
       segnaContestata,
-      eseguiSollecitiAutomatici,
       avanzaTempo,
       tornaAOggi,
       aggiornaStima,

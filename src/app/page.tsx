@@ -11,9 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { LivelloBadge } from "@/components/badges";
-import { toast } from "sonner";
+import { SollecitiAutoDialog, Dovuto } from "@/components/solleciti-auto-dialog";
 import {
   AlertTriangle,
   ArrowRight,
@@ -21,11 +20,10 @@ import {
   Clock,
   TrendingUp,
   Wallet,
-  Zap,
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const { fatture, oggi, getCliente, eseguiSollecitiAutomatici } = useStore();
+  const { fatture, oggi, getCliente } = useStore();
 
   const scadute = fatture.filter((f) => f.stato === "scaduta");
   const inAttesa = fatture.filter((f) => f.stato === "in_attesa");
@@ -44,19 +42,7 @@ export default function DashboardPage() {
 
   const dovuti = fatture
     .map((f) => ({ f, p: prossimoSollecito(f, oggi) }))
-    .filter((x) => x.p && x.p.dovuto);
-
-  const handleAuto = () => {
-    const n = eseguiSollecitiAutomatici();
-    if (n > 0)
-      toast.success(`${n} sollecito/i inviati automaticamente`, {
-        description: "Email / PEC / WhatsApp simulati secondo l'escalation.",
-      });
-    else
-      toast.info("Nessun sollecito dovuto oggi", {
-        description: "Avanza il tempo per far maturare le scadenze.",
-      });
-  };
+    .filter((x): x is Dovuto => !!x.p && x.p.dovuto);
 
   return (
     <div className="space-y-8">
@@ -84,20 +70,7 @@ export default function DashboardPage() {
             di insoluto scaduto
           </p>
         </div>
-        <Button
-          size="lg"
-          onClick={handleAuto}
-          disabled={dovuti.length === 0}
-          className="h-11 gap-2 rounded-full px-6 text-[0.95rem] shadow-md shadow-primary/20"
-        >
-          <Zap className="size-4" />
-          Esegui solleciti automatici
-          {dovuti.length > 0 && (
-            <span className="ml-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary-foreground/20 px-1.5 text-sm font-semibold">
-              {dovuti.length}
-            </span>
-          )}
-        </Button>
+        <SollecitiAutoDialog dovuti={dovuti} disabled={dovuti.length === 0} />
       </div>
 
       {/* Solleciti da inviare */}
