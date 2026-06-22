@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { eur, giorniTra, dataIt } from "@/lib/format";
-import { prossimoSollecito, statoEscalation } from "@/lib/scoring";
+import { prossimoSollecito } from "@/lib/scoring";
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StatoFatturaBadge, LivelloBadge } from "@/components/badges";
+import { LivelloBadge } from "@/components/badges";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -60,14 +60,28 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* CTA principale: solleciti automatici, in alto al centro */}
+      {/* Header situazionale: orienta sullo stato di oggi, non slogan di prodotto */}
       <div className="flex flex-col items-center gap-4 pt-2 text-center">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Con SollecitaPro gestisci i tuoi insoluti e ottieni un cash flow migliore.
+            Riepilogo al {dataIt(oggi)}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Monitoraggio insoluti e solleciti automatici al {dataIt(oggi)}.
+          <p className="text-muted-foreground">
+            {dovuti.length > 0 ? (
+              <>
+                <span className="font-semibold text-foreground">
+                  {dovuti.length} solleciti
+                </span>{" "}
+                da inviare oggi
+              </>
+            ) : (
+              "Nessun sollecito da inviare oggi"
+            )}{" "}
+            ·{" "}
+            <span className="font-semibold text-red-600 dark:text-red-400">
+              {eur(totScaduto)}
+            </span>{" "}
+            di insoluto scaduto
           </p>
         </div>
         <Button
@@ -83,11 +97,6 @@ export default function DashboardPage() {
             </span>
           )}
         </Button>
-        <p className="text-sm text-muted-foreground">
-          {dovuti.length > 0
-            ? `${dovuti.length} fatture pronte al sollecito`
-            : "Nessun sollecito dovuto adesso"}
-        </p>
       </div>
 
       {/* Solleciti da inviare */}
@@ -100,7 +109,7 @@ export default function DashboardPage() {
           <CardDescription>
             {dovuti.length === 0
               ? "Nessun sollecito dovuto: usa «Esegui solleciti automatici» o avanza il tempo."
-              : `${dovuti.length} fatture richiedono un sollecito oggi.`}
+              : "Fatture che hanno raggiunto la data del prossimo avviso."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -161,41 +170,16 @@ export default function DashboardPage() {
           label="Giorni medi di scoperto"
           value={`${giorniScoperto} gg`}
           sub="media sulle scadute (DSO)"
+          tone={
+            giorniScoperto > 90
+              ? "danger"
+              : giorniScoperto > 60
+                ? "warning"
+                : undefined
+          }
         />
       </div>
 
-      {/* Insoluti aperti */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Insoluti aperti</CardTitle>
-          <CardDescription>
-            Stato dell&apos;iter di sollecito per fattura
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {scadute.map((f) => {
-            const c = getCliente(f.clienteId);
-            return (
-              <Link
-                key={f.id}
-                href={`/fatture/${f.id}`}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50"
-              >
-                <div className="min-w-0">
-                  <div className="font-medium">{c?.ragioneSociale}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {f.numero} · {statoEscalation(f, oggi)}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <StatoFatturaBadge stato={f.stato} />
-                  <span className="font-semibold">{eur(f.importo)}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -211,26 +195,38 @@ function Kpi({
   label: string;
   value: string;
   sub: string;
-  tone?: "danger" | "ok";
+  tone?: "danger" | "warning" | "ok";
 }) {
+  const iconColor =
+    tone === "danger"
+      ? "text-red-500"
+      : tone === "warning"
+        ? "text-orange-500"
+        : tone === "ok"
+          ? "text-emerald-500"
+          : "text-primary";
+  const valueColor =
+    tone === "danger"
+      ? "text-red-600 dark:text-red-400"
+      : tone === "warning"
+        ? "text-orange-600 dark:text-orange-400"
+        : tone === "ok"
+          ? "text-emerald-600 dark:text-emerald-400"
+          : "";
   return (
     <Card>
       <CardContent className="pt-5">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span
-            className={
-              tone === "danger"
-                ? "text-red-500"
-                : tone === "ok"
-                  ? "text-emerald-500"
-                  : "text-primary"
-            }
-          >
-            {icon}
-          </span>
+          <span className={iconColor}>{icon}</span>
           {label}
         </div>
-        <div className="mt-2 text-2xl font-semibold tracking-tight">{value}</div>
+        <div
+          className={
+            "mt-2 text-2xl font-semibold tracking-tight tabular-nums " + valueColor
+          }
+        >
+          {value}
+        </div>
         <div className="text-xs text-muted-foreground">{sub}</div>
       </CardContent>
     </Card>

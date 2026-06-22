@@ -2,11 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
-import {
-  CANALI_PER_LIVELLO,
-  prossimoSollecito,
-} from "@/lib/scoring";
-import { generaTestoSollecito } from "@/lib/templates";
+import { prossimoSollecito } from "@/lib/scoring";
+import { generaDiffida, generaTestoSollecito } from "@/lib/templates";
 import { Canale, Cliente, Fattura, LABEL_CANALE, MAX_SOLLECITI } from "@/lib/types";
 import { dataIt, giorniTra } from "@/lib/format";
 import { LivelloBadge, CanaleBadge } from "@/components/badges";
@@ -31,7 +28,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
+  Check,
   CheckCircle2,
+  FileText,
   Mail,
   MessageCircle,
   Scale,
@@ -85,6 +84,10 @@ export function SollecitoPanel({
   };
 
   const iterCompletato = fattura.solleciti.length >= MAX_SOLLECITI;
+  const diffida = useMemo(
+    () => generaDiffida(cliente, fattura),
+    [cliente, fattura],
+  );
 
   return (
     <Card>
@@ -96,58 +99,8 @@ export function SollecitoPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Timeline */}
-        {fattura.solleciti.length > 0 && (
-          <ol className="space-y-3">
-            {fattura.solleciti.map((s) => (
-              <li key={s.id} className="flex gap-3">
-                <div className="mt-1 flex flex-col items-center">
-                  <div className="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                    {s.livello}
-                  </div>
-                </div>
-                <div className="flex-1 rounded-lg border p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <LivelloBadge livello={s.livello} />
-                      {s.canali.map((c) => (
-                        <CanaleBadge key={c} canale={c} />
-                      ))}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {dataIt(s.dataInvio)}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm font-medium">{s.oggetto}</div>
-                  <div className="mt-2 flex items-center gap-2">
-                    {s.stato === "risposta_ricevuta" ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
-                        <CheckCircle2 className="size-3.5" /> Risposta ricevuta
-                      </span>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => {
-                          segnaRisposta(fattura.id, s.id);
-                          toast("Segnata risposta del cliente");
-                        }}
-                      >
-                        Segna risposta ricevuta
-                      </Button>
-                    )}
-                    <TestoDialog oggetto={s.oggetto} testo={s.testo} />
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-
-        {fattura.solleciti.length > 0 && <Separator />}
-
-        {/* Prossima azione */}
+        {/* Prossima azione / stato corrente: in cima, è il motivo per cui si
+            apre questa pagina. La cronologia degli avvisi viene dopo. */}
         {fattura.stato === "pagata" && (
           <p className="flex items-center gap-2 text-sm text-emerald-600">
             <CheckCircle2 className="size-4" /> Fattura saldata: nessun sollecito
@@ -168,12 +121,23 @@ export function SollecitoPanel({
               <Scale className="size-4" /> Iter di sollecito completato
             </div>
             <p className="mt-1 text-sm text-red-600/90 dark:text-red-300/80">
-              Inviati tutti e 3 i solleciti senza esito. È il momento di valutare
-              l&apos;affidamento al recupero crediti.
+              Inviati tutti e 3 i solleciti senza esito. Prepara la diffida ad
+              adempiere o affida la pratica al recupero crediti.
             </p>
-            <Button variant="destructive" size="sm" className="mt-3" disabled>
-              Affida a recupero crediti (estensione)
-            </Button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <TestoDialog
+                oggetto={diffida.oggetto}
+                testo={diffida.testo}
+                trigger={
+                  <Button size="sm" className="gap-2">
+                    <FileText className="size-4" /> Genera diffida
+                  </Button>
+                }
+              />
+              <Button variant="destructive" size="sm" disabled>
+                Affida a recupero crediti (estensione)
+              </Button>
+            </div>
           </div>
         )}
 
@@ -198,7 +162,8 @@ export function SollecitoPanel({
 
             <div>
               <div className="mb-1.5 text-xs font-medium text-muted-foreground">
-                Canali di invio
+                Canali di invio{" "}
+                <span className="font-normal">· seleziona uno o più</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(["email", "pec", "whatsapp"] as Canale[]).map((c) => {
@@ -207,6 +172,8 @@ export function SollecitoPanel({
                   return (
                     <button
                       key={c}
+                      role="checkbox"
+                      aria-checked={attivo}
                       onClick={() => toggleCanale(c)}
                       className={
                         "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors " +
@@ -215,7 +182,13 @@ export function SollecitoPanel({
                           : "hover:bg-muted")
                       }
                     >
-                      {CANALE_ICON[c]}
+                      <span className="flex size-4 shrink-0 items-center justify-center">
+                        {attivo ? (
+                          <Check className="size-4" />
+                        ) : (
+                          CANALE_ICON[c]
+                        )}
+                      </span>
                       {LABEL_CANALE[c]}
                       {consigliato && !attivo && (
                         <span className="text-[10px] text-muted-foreground">
@@ -241,6 +214,69 @@ export function SollecitoPanel({
               )}
             </div>
           </div>
+        )}
+
+        {/* Cronologia degli avvisi già inviati: read-only, le azioni vivono
+            solo sullo step attivo (l'ultimo). */}
+        {fattura.solleciti.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <div className="mb-3 text-sm font-medium">Cronologia avvisi</div>
+              <ol className="space-y-3">
+                {fattura.solleciti.map((s, i) => {
+                  const attivo = i === fattura.solleciti.length - 1;
+                  return (
+                    <li key={s.id} className="flex gap-3">
+                      <div className="mt-1 flex flex-col items-center">
+                        <div className="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                          {s.livello}
+                        </div>
+                      </div>
+                      <div className="flex-1 rounded-lg border p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <LivelloBadge livello={s.livello} />
+                            {s.canali.map((c) => (
+                              <CanaleBadge key={c} canale={c} />
+                            ))}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {dataIt(s.dataInvio)}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-sm font-medium">{s.oggetto}</div>
+                        <div className="mt-2 flex items-center gap-2">
+                          {s.stato === "risposta_ricevuta" ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
+                              <CheckCircle2 className="size-3.5" /> Risposta ricevuta
+                            </span>
+                          ) : attivo ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => {
+                                segnaRisposta(fattura.id, s.id);
+                                toast("Segnata risposta del cliente");
+                              }}
+                            >
+                              Segna risposta ricevuta
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              Inviato
+                            </span>
+                          )}
+                          <TestoDialog oggetto={s.oggetto} testo={s.testo} />
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>

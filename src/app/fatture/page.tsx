@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { prossimoSollecito, statoEscalation } from "@/lib/scoring";
-import { eur, dataIt, giorniTra } from "@/lib/format";
+import { eur, dataIt, giorniTra, coloreRitardo } from "@/lib/format";
 import {
   Card,
   CardContent,
@@ -33,9 +33,30 @@ const FILTRI: { key: StatoFattura | "tutte" | "da_sollecitare"; label: string }[
   { key: "contestata", label: "Contestate" },
 ];
 
+type FiltroKey = (typeof FILTRI)[number]["key"];
+
 export default function FatturePage() {
+  return (
+    <Suspense>
+      <FattureView />
+    </Suspense>
+  );
+}
+
+function FattureView() {
   const { fatture, oggi, getCliente } = useStore();
-  const [filtro, setFiltro] = useState<(typeof FILTRI)[number]["key"]>("tutte");
+  const params = useSearchParams();
+  const statoIniziale = FILTRI.some((f) => f.key === params.get("stato"))
+    ? (params.get("stato") as FiltroKey)
+    : "tutte";
+  const [filtro, setFiltro] = useState<FiltroKey>(statoIniziale);
+
+  const conta = (key: (typeof FILTRI)[number]["key"]) =>
+    fatture.filter((f) => {
+      if (key === "tutte") return true;
+      if (key === "da_sollecitare") return prossimoSollecito(f, oggi)?.dovuto;
+      return f.stato === key;
+    }).length;
 
   const visibili = fatture
     .filter((f) => {
@@ -55,8 +76,8 @@ export default function FatturePage() {
           Fatture & solleciti
         </h1>
         <p className="text-sm text-muted-foreground">
-          Iter graduale automatico: primo avviso → secondo avviso → ultimo avviso, max 3
-          solleciti con 7 giorni di margine.
+          {fatture.length} fatture · {conta("da_sollecitare")} da sollecitare oggi
+          · {conta("scaduta")} scadute
         </p>
       </div>
 
@@ -69,6 +90,15 @@ export default function FatturePage() {
             onClick={() => setFiltro(f.key)}
           >
             {f.label}
+            <span
+              className={
+                filtro === f.key
+                  ? "text-primary-foreground/70"
+                  : "text-muted-foreground"
+              }
+            >
+              {conta(f.key)}
+            </span>
           </Button>
         ))}
       </div>
@@ -86,8 +116,8 @@ export default function FatturePage() {
                 <TableHead>Cliente</TableHead>
                 <TableHead className="text-right">Importo</TableHead>
                 <TableHead>Scadenza</TableHead>
-                <TableHead>Stato iter</TableHead>
-                <TableHead className="text-center">Prossimo</TableHead>
+                <TableHead>Stato</TableHead>
+                <TableHead>Azione richiesta</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -108,29 +138,32 @@ export default function FatturePage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{c?.ragioneSociale}</TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-semibold tabular-nums">
                       {eur(f.importo)}
                     </TableCell>
                     <TableCell className="text-sm">
                       {dataIt(f.dataScadenza)}
                       {f.stato === "scaduta" && (
-                        <div className="text-xs text-red-500">
+                        <div
+                          className={
+                            "text-xs font-medium tabular-nums " +
+                            coloreRitardo(ritardo)
+                          }
+                        >
                           +{ritardo} gg
                         </div>
                       )}
                     </TableCell>
                     <TableCell>
                       <StatoFatturaBadge stato={f.stato} />
-                      <div className="mt-1 max-w-44 text-xs text-muted-foreground">
-                        {statoEscalation(f, oggi)}
-                      </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {p?.dovuto ? (
-                        <LivelloBadge livello={p.livello} />
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {p?.dovuto && <LivelloBadge livello={p.livello} />}
+                        <span className="max-w-44 text-xs text-muted-foreground">
+                          {statoEscalation(f, oggi)}
+                        </span>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

@@ -65,3 +65,31 @@ Confidiamo in un Vostro sollecito riscontro per evitare ogni ulteriore aggravio.
 ${MITTENTE}`,
   };
 }
+
+/**
+ * Genera la diffida formale di pagamento da usare a iter di sollecito concluso,
+ * come passo preliminare all'affidamento al recupero crediti.
+ */
+export function generaDiffida(cliente: Cliente, f: Fattura): TestoSollecito {
+  const importo = eurPrecise(f.importo);
+  const rif = `${f.numero} del ${dataIt(f.dataEmissione)}`;
+  return {
+    oggetto: `DIFFIDA AD ADEMPIERE — fattura ${f.numero}`,
+    testo: `Spett.le ${cliente.ragioneSociale},
+alla c.a. di ${cliente.referente},
+
+premesso che la fattura ${rif}, dell'importo di ${importo} scaduta il ${dataIt(f.dataScadenza)}, risulta tuttora insoluta nonostante i ${f.solleciti.length} solleciti già trasmessi,
+
+con la presente, ai sensi e per gli effetti dell'art. 1454 c.c., Vi
+
+DIFFIDIAMO E INTIMIAMO
+
+a provvedere al pagamento integrale della somma dovuta entro il termine perentorio di 15 (quindici) giorni dal ricevimento della presente.
+
+Decorso inutilmente tale termine, ci riterremo liberi di intraprendere ogni opportuna azione a tutela del nostro credito, ivi compresa la richiesta di decreto ingiuntivo, con addebito di interessi di mora ex D.Lgs. 231/2002, spese legali e ulteriori oneri a Vostro carico.
+
+La presente vale altresì quale costituzione in mora ad ogni effetto di legge.
+
+${MITTENTE}`,
+  };
+}

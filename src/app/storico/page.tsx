@@ -98,7 +98,7 @@ export default function StoricoPage() {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {FILTRI.map((f) => (
           <Button
             key={f}
@@ -123,7 +123,9 @@ export default function StoricoPage() {
         <Card key={d}>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">{dataIt(d)}</CardTitle>
-            <CardDescription>{gruppi[d].length} eventi</CardDescription>
+            <CardDescription>
+              {gruppi[d].length} {gruppi[d].length === 1 ? "evento" : "eventi"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ol className="space-y-3">

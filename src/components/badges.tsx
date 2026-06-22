@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Affidabilita } from "@/lib/scoring";
 import {
@@ -26,6 +27,30 @@ export function AffidabilitaBadge({ a }: { a: Affidabilita }) {
   );
 }
 
+// Riempimento della barra in base alla fascia: rende lo score percepibile
+// a colpo d'occhio (rosso → verde) senza dover leggere il numero.
+const FASCIA_BAR: Record<Affidabilita["fascia"], string> = {
+  affidabile: "[&_[data-slot=progress-indicator]]:bg-emerald-500",
+  buono: "[&_[data-slot=progress-indicator]]:bg-lime-500",
+  rischio: "[&_[data-slot=progress-indicator]]:bg-amber-500",
+  critico: "[&_[data-slot=progress-indicator]]:bg-red-500",
+};
+
+export function AffidabilitaBar({
+  a,
+  className,
+}: {
+  a: Affidabilita;
+  className?: string;
+}) {
+  return (
+    <Progress
+      value={a.punteggio * 10}
+      className={cn(FASCIA_BAR[a.fascia], className)}
+    />
+  );
+}
+
 const STATO_CLASS: Record<StatoFattura, string> = {
   pagata: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
   in_attesa: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
@@ -47,9 +72,7 @@ const LIVELLO_CLASS: Record<LivelloSollecito, string> = {
 
 export function LivelloBadge({ livello }: { livello: LivelloSollecito }) {
   return (
-    <Badge className={cn(LIVELLO_CLASS[livello])}>
-      {livello}. {LABEL_LIVELLO[livello]}
-    </Badge>
+    <Badge className={cn(LIVELLO_CLASS[livello])}>{LABEL_LIVELLO[livello]}</Badge>
   );
 }
 

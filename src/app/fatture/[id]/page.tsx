@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { calcolaAffidabilita } from "@/lib/scoring";
-import { eurPrecise, dataIt, giorniTra } from "@/lib/format";
+import { eurPrecise, dataIt, giorniTra, coloreRitardo } from "@/lib/format";
 import {
   Card,
   CardContent,
@@ -12,6 +12,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   StatoFatturaBadge,
   AffidabilitaBadge,
@@ -77,7 +87,9 @@ export default function FatturaDetailPage() {
           <div className="text-sm text-muted-foreground">
             Scad. {dataIt(fattura.dataScadenza)}
             {fattura.stato === "scaduta" && ritardo > 0 && (
-              <span className="text-red-500"> · +{ritardo} gg</span>
+              <span className={"font-medium " + coloreRitardo(ritardo)}>
+                {" · "}+{ritardo} gg
+              </span>
             )}
           </div>
         </div>
@@ -111,10 +123,12 @@ export default function FatturaDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Azioni rapide */}
+      {/* Azioni rapide — gerarchia: l'invio del sollecito (nel pannello) resta
+          l'azione primaria; queste sono azioni di stato, con peso decrescente. */}
       {fattura.stato !== "pagata" && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
+            variant="secondary"
             onClick={() => {
               segnaPagata(fattura.id);
               toast.success("Fattura segnata come pagata");
@@ -124,16 +138,42 @@ export default function FatturaDetailPage() {
             <BadgeCheck className="size-4" /> Segna come pagata
           </Button>
           {fattura.stato !== "contestata" && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                segnaContestata(fattura.id);
-                toast("Fattura segnata come contestata");
-              }}
-              className="gap-2"
-            >
-              <Ban className="size-4" /> Segna contestata
-            </Button>
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    className="gap-2 text-muted-foreground hover:text-foreground"
+                  >
+                    <Ban className="size-4" /> Segna contestata
+                  </Button>
+                }
+              />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Segnare la fattura come contestata?</DialogTitle>
+                  <DialogDescription>
+                    L&apos;iter di sollecito verrà sospeso fino alla risoluzione
+                    della contestazione. Potrai riprenderlo in seguito.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose render={<Button variant="outline">Annulla</Button>} />
+                  <DialogClose
+                    render={
+                      <Button
+                        onClick={() => {
+                          segnaContestata(fattura.id);
+                          toast("Fattura segnata come contestata");
+                        }}
+                      >
+                        Conferma contestazione
+                      </Button>
+                    }
+                  />
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       )}

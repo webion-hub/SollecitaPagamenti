@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { calcolaAffidabilita, statoEscalation } from "@/lib/scoring";
-import { eur, iniziali, dataIt } from "@/lib/format";
+import { eur, iniziali, dataIt, coloreAvatar } from "@/lib/format";
 import {
   Card,
   CardContent,
@@ -13,9 +13,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { AffidabilitaBadge, StatoFatturaBadge } from "@/components/badges";
+import {
+  AffidabilitaBadge,
+  AffidabilitaBar,
+  StatoFatturaBadge,
+} from "@/components/badges";
 import {
   ArrowLeft,
   ArrowRight,
@@ -59,7 +61,7 @@ export default function ClienteDetailPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Avatar className="size-14">
-            <AvatarFallback className="text-lg">
+            <AvatarFallback className={"text-lg " + coloreAvatar(cliente.id)}>
               {iniziali(cliente.ragioneSociale)}
             </AvatarFallback>
           </Avatar>
@@ -89,7 +91,7 @@ export default function ClienteDetailPage() {
                 </span>
                 <span className="text-sm text-muted-foreground">/ 10</span>
               </div>
-              <Progress value={aff.punteggio * 10} className="mt-2" />
+              <AffidabilitaBar a={aff} className="mt-2" />
               <p className="mt-2 text-sm text-muted-foreground">
                 Fascia: <span className="font-medium text-foreground">{aff.label}</span>
               </p>

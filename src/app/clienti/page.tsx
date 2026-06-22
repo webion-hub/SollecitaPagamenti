@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { calcolaAffidabilita } from "@/lib/scoring";
-import { eur } from "@/lib/format";
-import { iniziali } from "@/lib/format";
+import { eur, iniziali, coloreAvatar } from "@/lib/format";
 import {
   Card,
   CardContent,
@@ -21,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { AffidabilitaBadge } from "@/components/badges";
+import { AffidabilitaBadge, AffidabilitaBar } from "@/components/badges";
 import { ArrowRight } from "lucide-react";
 
 export default function ClientiPage() {
@@ -64,7 +63,7 @@ export default function ClientiPage() {
                 <TableHead className="text-right">Esposto aperto</TableHead>
                 <TableHead className="text-center">Fatture</TableHead>
                 <TableHead className="text-center">Solleciti</TableHead>
-                <TableHead className="text-center">Affidabilità</TableHead>
+                <TableHead className="text-right">Affidabilità</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -78,7 +77,9 @@ export default function ClientiPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="size-9">
-                        <AvatarFallback>{iniziali(c.ragioneSociale)}</AvatarFallback>
+                        <AvatarFallback className={coloreAvatar(c.id)}>
+                          {iniziali(c.ragioneSociale)}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">{c.ragioneSociale}</div>
@@ -88,7 +89,7 @@ export default function ClientiPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-medium">
+                  <TableCell className="text-right font-semibold tabular-nums">
                     {eur(aperto)}
                   </TableCell>
                   <TableCell className="text-center text-muted-foreground">
@@ -97,13 +98,17 @@ export default function ClientiPage() {
                   <TableCell className="text-center text-muted-foreground">
                     {solleciti}
                   </TableCell>
-                  <TableCell className="text-center">
-                    <AffidabilitaBadge a={aff} />
+                  <TableCell>
+                    <div className="ml-auto flex w-32 flex-col items-end gap-1.5">
+                      <AffidabilitaBadge a={aff} />
+                      <AffidabilitaBar a={aff} className="w-full" />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Link
                       href={`/clienti/${c.id}`}
                       onClick={(e) => e.stopPropagation()}
+                      aria-label={`Apri dettaglio di ${c.ragioneSociale}`}
                     >
                       <ArrowRight className="size-4 text-muted-foreground" />
                     </Link>
