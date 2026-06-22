@@ -4,7 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { History, LayoutDashboard, Receipt, Users } from "lucide-react";
+import { useStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+  History,
+  LayoutDashboard,
+  Receipt,
+  RotateCcw,
+  Users,
+} from "lucide-react";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -82,6 +91,8 @@ function TabNav({ className }: { className?: string }) {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { reset } = useStore();
+
   return (
     <div className="app-surface min-h-screen">
       {/* Floating header: brand · tab nav */}
@@ -98,8 +109,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <TabNav />
 
-          {/* Spaziatore speculare al brand: mantiene le tab centrate sull'asse della pagina */}
-          <div aria-hidden className="flex-1" />
+          {/* Speculare al brand: mantiene le tab centrate e ospita il reset demo */}
+          <div className="flex flex-1 justify-end">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-full text-muted-foreground"
+              title="Ripristina i dati demo"
+              onClick={() => {
+                reset();
+                toast("Dati demo ripristinati");
+              }}
+            >
+              <RotateCcw className="size-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
