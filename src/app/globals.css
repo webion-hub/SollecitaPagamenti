@@ -49,73 +49,76 @@
 }
 
 :root {
-  /* Professional indigo / cool-slate palette */
-  --background: oklch(0.985 0.004 257);
-  --foreground: oklch(0.24 0.03 264);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.03 264);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.03 264);
-  --primary: oklch(0.51 0.17 266);
-  --primary-foreground: oklch(0.985 0.006 260);
-  --secondary: oklch(0.962 0.008 264);
-  --secondary-foreground: oklch(0.32 0.04 265);
-  --muted: oklch(0.966 0.006 260);
-  --muted-foreground: oklch(0.52 0.022 264);
-  --accent: oklch(0.945 0.025 266);
-  --accent-foreground: oklch(0.42 0.12 266);
-  --destructive: oklch(0.585 0.215 25);
-  --border: oklch(0.912 0.008 264);
-  --input: oklch(0.912 0.008 264);
-  --ring: oklch(0.51 0.17 266);
-  --chart-1: oklch(0.51 0.17 266);
-  --chart-2: oklch(0.62 0.15 230);
-  --chart-3: oklch(0.7 0.14 165);
-  --chart-4: oklch(0.72 0.16 60);
-  --chart-5: oklch(0.62 0.2 25);
+  /* "Carta & inchiostro" — fondo carta caldo + petrolio profondo.
+     Identità editoriale/contabile, seria, lontana dal viola-SaaS di default.
+     Accento ottone caldo per i grafici, in contrasto con il petrolio freddo. */
+  --background: oklch(0.984 0.008 92); /* avorio caldo (carta) */
+  --foreground: oklch(0.247 0.022 235); /* inchiostro freddo profondo */
+  --card: oklch(0.999 0.003 92); /* foglio pulito, stacca dal fondo */
+  --card-foreground: oklch(0.247 0.022 235);
+  --popover: oklch(0.999 0.003 92);
+  --popover-foreground: oklch(0.247 0.022 235);
+  --primary: oklch(0.47 0.094 213); /* verde petrolio */
+  --primary-foreground: oklch(0.985 0.006 92);
+  --secondary: oklch(0.953 0.009 92);
+  --secondary-foreground: oklch(0.33 0.03 228);
+  --muted: oklch(0.955 0.008 92);
+  --muted-foreground: oklch(0.52 0.018 232);
+  --accent: oklch(0.928 0.03 210);
+  --accent-foreground: oklch(0.4 0.085 213);
+  --destructive: oklch(0.575 0.2 27);
+  --border: oklch(0.903 0.009 92);
+  --input: oklch(0.903 0.009 92);
+  --ring: oklch(0.47 0.094 213);
+  --chart-1: oklch(0.47 0.094 213); /* petrolio */
+  --chart-2: oklch(0.55 0.1 242); /* blu profondo */
+  --chart-3: oklch(0.6 0.085 162); /* verde salvia */
+  --chart-4: oklch(0.7 0.105 78); /* ottone */
+  --chart-5: oklch(0.59 0.14 40); /* terracotta */
   --radius: 0.7rem;
-  --sidebar: oklch(0.985 0.004 257);
-  --sidebar-foreground: oklch(0.24 0.03 264);
-  --sidebar-primary: oklch(0.51 0.17 266);
-  --sidebar-primary-foreground: oklch(0.985 0.006 260);
-  --sidebar-accent: oklch(0.945 0.025 266);
-  --sidebar-accent-foreground: oklch(0.42 0.12 266);
-  --sidebar-border: oklch(0.912 0.008 264);
-  --sidebar-ring: oklch(0.51 0.17 266);
+  --sidebar: oklch(0.984 0.008 92);
+  --sidebar-foreground: oklch(0.247 0.022 235);
+  --sidebar-primary: oklch(0.47 0.094 213);
+  --sidebar-primary-foreground: oklch(0.985 0.006 92);
+  --sidebar-accent: oklch(0.928 0.03 210);
+  --sidebar-accent-foreground: oklch(0.4 0.085 213);
+  --sidebar-border: oklch(0.903 0.009 92);
+  --sidebar-ring: oklch(0.47 0.094 213);
 }
 
 .dark {
-  --background: oklch(0.19 0.022 265);
-  --foreground: oklch(0.96 0.006 260);
-  --card: oklch(0.235 0.024 265);
-  --card-foreground: oklch(0.96 0.006 260);
-  --popover: oklch(0.235 0.024 265);
-  --popover-foreground: oklch(0.96 0.006 260);
-  --primary: oklch(0.66 0.16 266);
-  --primary-foreground: oklch(0.17 0.02 265);
-  --secondary: oklch(0.29 0.026 265);
-  --secondary-foreground: oklch(0.96 0.006 260);
-  --muted: oklch(0.29 0.026 265);
-  --muted-foreground: oklch(0.7 0.02 264);
-  --accent: oklch(0.33 0.05 266);
-  --accent-foreground: oklch(0.88 0.05 266);
-  --destructive: oklch(0.68 0.19 24);
+  /* Carboncino petrolio: scuro freddo con testo avorio caldo */
+  --background: oklch(0.206 0.018 224);
+  --foreground: oklch(0.95 0.007 92);
+  --card: oklch(0.249 0.02 224);
+  --card-foreground: oklch(0.95 0.007 92);
+  --popover: oklch(0.249 0.02 224);
+  --popover-foreground: oklch(0.95 0.007 92);
+  --primary: oklch(0.71 0.115 205);
+  --primary-foreground: oklch(0.18 0.02 224);
+  --secondary: oklch(0.3 0.022 224);
+  --secondary-foreground: oklch(0.95 0.007 92);
+  --muted: oklch(0.3 0.022 224);
+  --muted-foreground: oklch(0.71 0.016 100);
+  --accent: oklch(0.34 0.05 210);
+  --accent-foreground: oklch(0.88 0.05 205);
+  --destructive: oklch(0.68 0.19 25);
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.66 0.16 266);
-  --chart-1: oklch(0.66 0.16 266);
-  --chart-2: oklch(0.68 0.14 230);
-  --chart-3: oklch(0.72 0.14 165);
-  --chart-4: oklch(0.76 0.15 60);
-  --chart-5: oklch(0.68 0.19 25);
-  --sidebar: oklch(0.235 0.024 265);
-  --sidebar-foreground: oklch(0.96 0.006 260);
-  --sidebar-primary: oklch(0.66 0.16 266);
-  --sidebar-primary-foreground: oklch(0.17 0.02 265);
-  --sidebar-accent: oklch(0.33 0.05 266);
-  --sidebar-accent-foreground: oklch(0.88 0.05 266);
+  --ring: oklch(0.71 0.115 205);
+  --chart-1: oklch(0.71 0.115 205);
+  --chart-2: oklch(0.66 0.12 242);
+  --chart-3: oklch(0.7 0.1 162);
+  --chart-4: oklch(0.76 0.115 78);
+  --chart-5: oklch(0.66 0.15 40);
+  --sidebar: oklch(0.249 0.02 224);
+  --sidebar-foreground: oklch(0.95 0.007 92);
+  --sidebar-primary: oklch(0.71 0.115 205);
+  --sidebar-primary-foreground: oklch(0.18 0.02 224);
+  --sidebar-accent: oklch(0.34 0.05 210);
+  --sidebar-accent-foreground: oklch(0.88 0.05 205);
   --sidebar-border: oklch(1 0 0 / 11%);
-  --sidebar-ring: oklch(0.66 0.16 266);
+  --sidebar-ring: oklch(0.71 0.115 205);
 }
 
 @layer base {
@@ -136,16 +139,23 @@
   }
 }
 
-/* Subtle dotted texture for the app backdrop. Sits behind solid cards/
-   popovers, so it never bleeds into components on top of it. */
+/* Atmosfera "carta": un alone petrolio freddo in alto che sfuma nel foglio,
+   con un velo caldo (ottone) sul bordo superiore. Fisso al viewport così non
+   scorre né si ripete, e resta dietro a card/popover opachi. */
 @layer components {
   .app-surface {
     background-color: var(--background);
-    background-image: radial-gradient(
-      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
-      transparent 1.5px
-    );
-    background-size: 22px 22px;
-    background-position: -11px -11px;
+    background-image:
+      radial-gradient(
+        120% 80% at 50% -30%,
+        color-mix(in oklch, var(--primary) 14%, transparent),
+        transparent 60%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--chart-4) 7%, transparent),
+        transparent 26%
+      );
+    background-attachment: fixed;
   }
 }

@@ -87,6 +87,7 @@ export default function DashboardPage() {
         <Button
           size="lg"
           onClick={handleAuto}
+          disabled={dovuti.length === 0}
           className="h-11 gap-2 rounded-full px-6 text-[0.95rem] shadow-md shadow-primary/20"
         >
           <Zap className="size-4" />
